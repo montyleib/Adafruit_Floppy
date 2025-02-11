@@ -90,8 +90,8 @@ uint8_t cmd_buffer[32], reply_buffer[128];
 uint8_t cmd_buff_idx = 0;
 
 #define GW_FIRMVER_MAJOR 1
-#define GW_FIRMVER_MINOR 0
-#define GW_MAXCMD      21
+#define GW_FIRMVER_MINOR 1
+#define GW_MAXCMD      26
 #define GW_HW_MODEL    8  // Adafruity
 #define GW_HW_SUBMODEL 0  // Adafruit Floppy Generic
 #define GW_USB_SPEED   0  // Full Speed
@@ -118,6 +118,7 @@ uint8_t cmd_buff_idx = 0;
 #define GW_CMD_SETPIN    15
 #define GW_CMD_SETPIN_DENSITY 2
 #define GW_CMD_RESET     16
+//#define GW_CMD_ERASE     17
 #define GW_CMD_SOURCEBYTES 18
 #define GW_CMD_SINKBYTES 19
 #define GW_CMD_GETPIN 20
@@ -318,6 +319,27 @@ void loop() {
     reply_buffer[i++] = GW_ACK_OK;
     Serial.write(reply_buffer, 2);
   }
+
+/*  monty's interpretation of floppy_erase_prep
+
+  else if (cmd == GW_CMD_ERASE) {
+    if (!floppy) goto needfloppy;
+
+    Serial1.println("erase");
+
+    if (floppy->get_write_protect()) {
+      reply_buffer[i++] = GW_ACK_WRPROT;
+      Serial.write(reply_buffer, 2);
+      
+  } else {
+    write_pin(WRGATE_PIN, true)
+    floppy_state = ST_erase_flux
+    flux_op.status = ACK_OKAY
+    flux_op.end = time_now() + time_from_samples(ef.flux_ticks)
+
+    }
+  }
+*/
 
   else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
