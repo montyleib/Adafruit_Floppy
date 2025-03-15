@@ -321,9 +321,11 @@ void loop() {
     Serial.write(reply_buffer, 2);
   }
 
-/*  monty's interpretation of floppy_erase_prep
-
   else if (cmd == GW_CMD_ERASE) {
+
+    //  pseudocode!!!  need bytes 3 thru 6 of the command buffer
+    uint8_t ef.fluxticks = cmd_buffer[3-6];
+
     if (!floppy) goto needfloppy;
 
     Serial1.println("erase");
@@ -333,15 +335,20 @@ void loop() {
       Serial.write(reply_buffer, 2);
       
   } else {
-    write_pin(WRGATE_PIN, true)
+    digitalWrite(WRGATE_PIN, true)
     floppy_state = ST_erase_flux
     flux_op.status = ACK_OKAY
     flux_op.end = time_now() + time_from_samples(ef.flux_ticks)
 
     }
+  void loop(){
+  if flux_op.end > time_now()
   }
-*/
 
+  digitalWrite(WRGATE_PIN, false)
+  floppy_state = ST_inactive
+
+}
   else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
