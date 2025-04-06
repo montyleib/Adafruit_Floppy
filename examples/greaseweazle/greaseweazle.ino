@@ -321,10 +321,31 @@ void loop() {
     Serial.write(reply_buffer, 2);
   }
 
+/*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
+
+/case CMD_ERASE_FLUX: {
+/
+/  struct gw_erase_flux ef;
+/    if (len != (2 + sizeof(ef)))
+/      goto bad_command;
+/    memcpy(&ef, &u_buf[2], len-2);
+/    u_buf[1] = floppy_erase_prep(&ef);
+/    goto out;
+/}
+*/
+
   else if (cmd == GW_CMD_ERASE) {
 
-    //  pseudocode!!!  need bytes 3 thru 6 of the command buffer
-    uint8_t ef.fluxticks = cmd_buffer[3-6];
+    // need bytes 3 thru 6 of the command buffer
+    // uint8_t ef.fluxticks = cmd_buffer[3-6];  NOPE!
+
+    indx_list = [3, 4, 5, 6]
+
+    // Get positional characters from String
+    // using generator expression + enumerate()
+    // as uint8_t
+
+    uint16_t ef.fluxticks = ''.join((char for idx, char in enumerate(cmd_buffer) if idx in indx_list))
 
     if (!floppy) goto needfloppy;
 
@@ -342,13 +363,14 @@ void loop() {
 
     }
   void loop(){
-  if flux_op.end > time_now()
-  }
+    if flux_op.end > time_now()
+    }
 
   digitalWrite(WRGATE_PIN, false)
   floppy_state = ST_inactive
 
-}
+  }
+
   else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
