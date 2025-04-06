@@ -118,7 +118,7 @@ uint8_t cmd_buff_idx = 0;
 #define GW_CMD_SETPIN    15
 #define GW_CMD_SETPIN_DENSITY 2
 #define GW_CMD_RESET     16
-//#define GW_CMD_ERASE     17
+#define GW_CMD_ERASE     17
 #define GW_CMD_SOURCEBYTES 18
 #define GW_CMD_SINKBYTES 19
 #define GW_CMD_GETPIN 20
