@@ -354,6 +354,7 @@ void loop() {
     if (floppy->get_write_protect()) {
       reply_buffer[i++] = GW_ACK_WRPROT;
       Serial.write(reply_buffer, 2);
+      flux_op.end = 0
       
   } else {
     digitalWrite(WRGATE_PIN, true)
