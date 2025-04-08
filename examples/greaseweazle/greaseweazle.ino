@@ -363,7 +363,7 @@ void loop() {
     flux_op.end = time_now() + time_from_samples(ef.flux_ticks)
 
     }
-  void loop(){
+  void loop() {
     if flux_op.end > time_now()
     }
 
