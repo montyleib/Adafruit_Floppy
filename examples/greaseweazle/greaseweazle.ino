@@ -358,17 +358,17 @@ void loop() {
       
   } else {
     digitalWrite(WRGATE_PIN, true);
-    floppy_state = ST_erase_flux;
-    flux_op_status = GW_ACK_OKAY;
-    flux_op_end = time_now() + time_from_samples(ef_fluxticks)
+    /*floppy_state = ST_erase_flux*/;
+    flux_status = GW_ACK_OK;
+    flux_op_end = time_t() + time_from_samples(ef_fluxticks)
 
     }
   void loop() {
-    if flux_op_end > time_now()
+    if flux_op_end > time_t()
     }
 
-  digitalWrite(WRGATE_PIN, false)
-  floppy_state = ST_inactive
+  digitalWrite(WRGATE_PIN, false);
+  /*floppy_state = ST_inactive*/
 
   }
 
