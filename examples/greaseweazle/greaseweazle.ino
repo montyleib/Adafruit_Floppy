@@ -130,7 +130,7 @@ uint8_t cmd_buff_idx = 0;
 #define GW_ACK_WRPROT 6
 #define GW_ACK_NOUNIT 7
 #define GW_ACK_BADPIN 10
-
+#define indx_list = [3, 4, 5, 6]
 uint32_t timestamp = 0;
 
 bool setbustype(int bustype) {
@@ -338,8 +338,6 @@ void loop() {
 
     // need bytes 3 thru 6 of the command buffer
     // uint8_t ef.fluxticks = cmd_buffer[3-6];  NOPE!
-
-    #define indx_list = [3, 4, 5, 6]
 
     // Get positional characters from String
     // using generator expression + enumerate()
