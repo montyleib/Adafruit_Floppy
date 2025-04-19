@@ -131,6 +131,8 @@ uint8_t cmd_buff_idx = 0;
 #define GW_ACK_NOUNIT 7
 #define GW_ACK_BADPIN 10
 #define indx_list = [3, 4, 5, 6]
+#define ef_fluxticks 0
+#define flux_op_end 0
 uint32_t timestamp = 0;
 
 bool setbustype(int bustype) {
@@ -343,7 +345,7 @@ void loop() {
     // using generator expression + enumerate()
     // as uint8_t
 
-    uint16_t ef.fluxticks = join((char for idx, char in enumerate(cmd_buffer) if idx in indx_list))
+    uint16_t ef_fluxticks = join((char for idx, char in enumerate(cmd_buffer) if idx in indx_list))
 
     if (!floppy) goto needfloppy;
 
@@ -352,17 +354,17 @@ void loop() {
     if (floppy->get_write_protect()) {
       reply_buffer[i++] = GW_ACK_WRPROT;
       Serial.write(reply_buffer, 2);
-      flux_op.end = 0
+      flux_op_end = 0
       
   } else {
     digitalWrite(WRGATE_PIN, true);
     floppy_state = ST_erase_flux;
-    flux_op.status = ACK_OKAY;
-    flux_op.end = time_now() + time_from_samples(ef.flux_ticks)
+    flux_op_status = GW_ACK_OKAY;
+    flux_op_end = time_now() + time_from_samples(ef_fluxticks)
 
     }
   void loop() {
-    if flux_op.end > time_now()
+    if flux_op_end > time_now()
     }
 
   digitalWrite(WRGATE_PIN, false)
