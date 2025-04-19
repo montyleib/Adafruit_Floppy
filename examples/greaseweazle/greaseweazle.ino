@@ -339,13 +339,13 @@ void loop() {
     // need bytes 3 thru 6 of the command buffer
     // uint8_t ef.fluxticks = cmd_buffer[3-6];  NOPE!
 
-    indx_list = [3, 4, 5, 6]
+    #define indx_list = [3, 4, 5, 6]
 
     // Get positional characters from String
     // using generator expression + enumerate()
     // as uint8_t
 
-    uint16_t ef.fluxticks = ''.join((char for idx, char in enumerate(cmd_buffer) if idx in indx_list))
+    uint16_t ef.fluxticks = join((char for idx, char in enumerate(cmd_buffer) if idx in indx_list))
 
     if (!floppy) goto needfloppy;
 
