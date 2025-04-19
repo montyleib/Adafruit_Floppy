@@ -357,9 +357,9 @@ void loop() {
       flux_op.end = 0
       
   } else {
-    digitalWrite(WRGATE_PIN, true)
-    floppy_state = ST_erase_flux
-    flux_op.status = ACK_OKAY
+    digitalWrite(WRGATE_PIN, true);
+    floppy_state = ST_erase_flux;
+    flux_op.status = ACK_OKAY;
     flux_op.end = time_now() + time_from_samples(ef.flux_ticks)
 
     }
