@@ -1,4 +1,4 @@
-#include <Adafruit_Floppy.h>
+#include <https://github.com/montyleib/Adafruit_Floppy/blob/main/src/Adafruit_Floppy.h>
 
 #if defined(ADAFRUIT_FEATHER_M4_EXPRESS)
 #define DENSITY_PIN A1 // IDC 2
