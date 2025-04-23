@@ -1,4 +1,4 @@
-#include <Adafruit_Floppy.h>
+#include </home/monty/Downloads/Coding/Adafruit_Floppy/src/Adafruit_Floppy.h>
 
 #if defined(ADAFRUIT_FEATHER_M4_EXPRESS)
 #define DENSITY_PIN A1 // IDC 2
@@ -49,7 +49,7 @@
 #endif
 
 #ifndef USE_TINYUSB
-#error "Please set Adafruit TinyUSB under Tools > USB Stack"
+// #error "Please set Adafruit TinyUSB under Tools > USB Stack"
 #endif
 
 #if defined(ARDUINO_ADAFRUIT_FEATHER_RP2040) || defined(ARDUINO_ADAFRUIT_FEATHER_RP2350_HSTX)
@@ -130,9 +130,10 @@ uint8_t cmd_buff_idx = 0;
 #define GW_ACK_WRPROT 6
 #define GW_ACK_NOUNIT 7
 #define GW_ACK_BADPIN 10
-#define indx_list = [3, 4, 5, 6]
-#define ef_fluxticks 0
+
 #define flux_op_end 0
+#define indx_list "0000"
+
 uint32_t timestamp = 0;
 
 bool setbustype(int bustype) {
@@ -324,54 +325,39 @@ void loop() {
   }
 
 /*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
-
-/case CMD_ERASE_FLUX: {
-/
-/  struct gw_erase_flux ef;
-/    if (len != (2 + sizeof(ef)))
-/      goto bad_command;
-/    memcpy(&ef, &u_buf[2], len-2);
-/    u_buf[1] = floppy_erase_prep(&ef);
-/    goto out;
-/}
 */
 
-  else if (cmd == GW_CMD_ERASE) {
+	else if (cmd == GW_CMD_ERASE) {
 
-    // need bytes 3 thru 6 of the command buffer
-    // uint8_t ef.fluxticks = cmd_buffer[3-6];  NOPE!
+		uint16_t ef_fluxticks = 0;
+		for (size_t j = 0; j < indx_list_len; ++j) {
+			int idx = indx_list[j];
+			ef_fluxticks = (ef_fluxticks << 8) | cmd_buffer[idx];
+		}
 
-    // Get positional characters from String
-    // using generator expression + enumerate()
-    // as uint8_t
-
-    uint16_t ef_fluxticks = join((char for idx, char in enumerate(cmd_buffer) if idx in indx_list))
-
-    if (!floppy) goto needfloppy;
+    if (!floppy) return;  // or goto needfloppy;
 
     Serial1.println("erase");
 
     if (floppy->get_write_protect()) {
-      reply_buffer[i++] = GW_ACK_WRPROT;
-      Serial.write(reply_buffer, 2);
-      flux_op_end = 0
-      
-  } else {
-    digitalWrite(WRGATE_PIN, true);
-    /*floppy_state = ST_erase_flux*/;
-    flux_status = GW_ACK_OK;
-    flux_op_end = time_t() + time_from_samples(ef_fluxticks)
-
-    }
-  void loop() {
-    if flux_op_end > time_t()
+        reply_buffer[i++] = GW_ACK_WRPROT;
+        Serial.write(reply_buffer, 2);
+        flux_op_end = 0;
+    } else {
+        flux_op_end = time_now() + time_from_samples(ef_fluxticks);
     }
 
-  digitalWrite(WRGATE_PIN, false);
-  /*floppy_state = ST_inactive*/
-
+	void loop() {
+		if (flux_op_end > time_now()) {
+			digitalWrite(WRGATE_PIN, true);
+			floppy_state = ST_erase_flux;
+			flux_op.status = ACK_OKAY;
+		} else {
+			digitalWrite(WRGATE_PIN, false);
+			floppy_state = ST_inactive;
+		}
+	}
   }
-
   else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
