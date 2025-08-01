@@ -357,7 +357,6 @@ void loop() {
 			floppy_state = ST_inactive;
 		}
 	}
-  }
   else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
