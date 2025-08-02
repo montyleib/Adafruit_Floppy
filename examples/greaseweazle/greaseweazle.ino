@@ -376,7 +376,8 @@ void loop() {
                 digitalWrite(WRGATE_PIN, false);
                 floppy_state = ST_inactive;
             }
-        } else if (cmd == GW_CMD_SETBUSTYPE) {
+        }
+    else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
     Serial1.printf("Set bus type %d -> %d\n\r", bustype, result);
