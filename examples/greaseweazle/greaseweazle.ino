@@ -361,7 +361,7 @@ void loop() {
         if (floppy->get_write_protect()) {
             reply_buffer[i++] = GW_ACK_WRPROT;
             Serial.write(reply_buffer, 2);
-            flux_op_end = 0;
+
         } else {
             flux_op_end = time_now() + time_from_samples(flux_ticks);
         }
