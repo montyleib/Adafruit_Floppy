@@ -367,7 +367,6 @@ void loop() {
         }
 
         void loop()
-        {
             if (flux_op_end > time_now()) {
                 digitalWrite(WRGATE_PIN, true);
                 floppy_state = ST_erase_flux;
@@ -376,7 +375,7 @@ void loop() {
                 digitalWrite(WRGATE_PIN, false);
                 floppy_state = ST_inactive;
             }
-        }
+
     else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
