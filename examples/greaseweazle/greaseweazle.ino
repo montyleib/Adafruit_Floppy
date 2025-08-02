@@ -328,9 +328,9 @@ void loop() {
     /*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
      */
 
-    else if (cmd == GW_CMD_ERASE) {
-        if (!floppy)
-            goto needfloppy;
+  else if (cmd == GW_CMD_ERASE) {
+    if (!floppy)
+      goto needfloppy;
 
         uint32_t flux_ticks;
         uint16_t revs;
