@@ -133,6 +133,8 @@ uint8_t cmd_buff_idx = 0;
 
 #define flux_op_end 0
 #define indx_list "0000"
+#define floppy_state 0
+#define ST_inactive 0
 
 uint32_t timestamp = 0;
 
@@ -366,7 +368,7 @@ void loop() {
             flux_op_end = millis() + time_from_samples(flux_ticks); // arduino does not have time_now()
         }
 
-        void loop()
+        void loop() {
             if (flux_op_end > time_now()) {
                 digitalWrite(WRGATE_PIN, true);
                 floppy_state = ST_erase_flux;
@@ -375,6 +377,8 @@ void loop() {
                 digitalWrite(WRGATE_PIN, false);
                 floppy_state = ST_inactive;
             }
+        }
+  }
 
     else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
