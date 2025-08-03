@@ -363,7 +363,7 @@ void loop() {
             Serial.write(reply_buffer, 2);
 
         } else {
-            flux_op_end = time_now() + time_from_samples(flux_ticks);
+            flux_op_end = millis() + time_from_samples(flux_ticks); // arduino does not have time_now()
         }
 
         void loop()
