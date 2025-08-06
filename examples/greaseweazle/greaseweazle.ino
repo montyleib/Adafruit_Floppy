@@ -332,16 +332,34 @@ void loop() {
 /*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
 */
 
-	else if (cmd == GW_CMD_ERASE) {
+  else if (cmd == GW_CMD_ERASE) {
 
-		uint16_t ef_fluxticks = 0;
-		for (size_t j = 0; j < indx_list_len; ++j) {
-			int idx = indx_list[j];
-			ef_fluxticks = (ef_fluxticks << 8) | cmd_buffer[idx];
-		}
+        if (!floppy)
+            goto needfloppy;
 
-    if (!floppy) return;  // or goto needfloppy;
+        uint32_t flux_ticks;
+        uint16_t revs;
+        flux_ticks = cmd_buffer[5];
+        flux_ticks <<= 8;
+        flux_ticks |= cmd_buffer[4];
+        flux_ticks <<= 8;
+        flux_ticks |= cmd_buffer[3];
+        flux_ticks <<= 8;
+        flux_ticks |= cmd_buffer[2];
+        revs = cmd_buffer[7];
+        revs <<= 8;
+        revs |= cmd_buffer[6];
+        bool use_index;
+        if (revs) {
+            revs -= 1;
+            use_index = true;
+        } else {
+            use_index = false;
+        }
 
+        if (floppy->track() == -1) {
+            floppy->goto_track(0);
+        }
     Serial1.println("erase");
 
     if (floppy->get_write_protect()) {
@@ -349,11 +367,11 @@ void loop() {
         Serial.write(reply_buffer, 2);
         flux_op_end = 0;
     } else {
-        flux_op_end = time_now() + time_from_samples(ef_fluxticks);
+        flux_op_end = millis() + time_from_samples(ef_fluxticks); // arduino does not have time_now()
     }
 
 	void loop() {
-		if (flux_op_end > time_now()) {
+		if (flux_op_end > millis()) {
 			digitalWrite(WRGATE_PIN, true);
 			floppy_state = ST_erase_flux;
 			flux_op.status = ACK_OKAY;
