@@ -133,8 +133,11 @@ uint8_t cmd_buff_idx = 0;
 
 #define flux_op_end 0
 #define indx_list "0000"
-#define floppy_state 0
-#define ST_inactive 0
+#define SYSCLK_MHZ  72
+#define STK_MHZ    (SYSCLK_MHZ / 8)
+#define TIME_MHZ STK_MHZ
+#define time_from_samples(x) ((x) * TIME_MHZ / SAMPLE_MHZ)
+
 
 uint32_t timestamp = 0;
 
@@ -326,62 +329,41 @@ void loop() {
     Serial.write(reply_buffer, 2);
   }
 
+/*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
+*/
 
-    /*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
-     */
+	else if (cmd == GW_CMD_ERASE) {
 
-  else if (cmd == GW_CMD_ERASE) {
-    if (!floppy)
-      goto needfloppy;
+		uint16_t ef_fluxticks = 0;
+		for (size_t j = 0; j < indx_list_len; ++j) {
+			int idx = indx_list[j];
+			ef_fluxticks = (ef_fluxticks << 8) | cmd_buffer[idx];
+		}
 
-        uint32_t flux_ticks;
-        uint16_t revs;
-        flux_ticks = cmd_buffer[5];
-        flux_ticks <<= 8;
-        flux_ticks |= cmd_buffer[4];
-        flux_ticks <<= 8;
-        flux_ticks |= cmd_buffer[3];
-        flux_ticks <<= 8;
-        flux_ticks |= cmd_buffer[2];
-        revs = cmd_buffer[7];
-        revs <<= 8;
-        revs |= cmd_buffer[6];
-        bool use_index;
-        if (revs) {
-            revs -= 1;
-            use_index = true;
-        } else {
-            use_index = false;
-        }
+    if (!floppy) return;  // or goto needfloppy;
 
-        if (floppy->track() == -1) {
-            floppy->goto_track(0);
-        }
+    Serial1.println("erase");
 
-        Serial1.println("erase");
+    if (floppy->get_write_protect()) {
+        reply_buffer[i++] = GW_ACK_WRPROT;
+        Serial.write(reply_buffer, 2);
+        flux_op_end = 0;
+    } else {
+        flux_op_end = time_now() + time_from_samples(ef_fluxticks);
+    }
 
-        if (floppy->get_write_protect()) {
-            reply_buffer[i++] = GW_ACK_WRPROT;
-            Serial.write(reply_buffer, 2);
-
-        } else {
-            flux_op_end = millis() + time_from_samples(flux_ticks); // arduino does not have time_now()
-        }
-
-        void loop()
-        {
-            if (flux_op_end > time_now()) {
-                digitalWrite(WRGATE_PIN, true);
-                floppy_state = ST_erase_flux;
-                flux_op.status = ACK_OKAY;
-            } else {
-                digitalWrite(WRGATE_PIN, false);
-                floppy_state = ST_inactive;
-            }
-        }
+	void loop() {
+		if (flux_op_end > time_now()) {
+			digitalWrite(WRGATE_PIN, true);
+			floppy_state = ST_erase_flux;
+			flux_op.status = ACK_OKAY;
+		} else {
+			digitalWrite(WRGATE_PIN, false);
+			floppy_state = ST_inactive;
+		}
+	}
   }
-
-    else if (cmd == GW_CMD_SETBUSTYPE) {
+  else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
     Serial1.printf("Set bus type %d -> %d\n\r", bustype, result);
