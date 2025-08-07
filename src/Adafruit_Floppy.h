@@ -19,6 +19,7 @@
 #include <Adafruit_SPIDevice.h>
 // to implement SdFat Block Driver
 //
+#ifndef DISABLE_FS_H_WARNING
 #define DISABLE_FS_H_WARNING
 #include "SdFat.h"
 #include "SdFatConfig.h"
