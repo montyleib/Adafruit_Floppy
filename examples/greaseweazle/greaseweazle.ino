@@ -133,6 +133,7 @@ uint8_t cmd_buff_idx = 0;
 
 #define flux_op_end 0
 #define indx_list "0000"
+#define SAMPLE_MHZ 72
 #define SYSCLK_MHZ  72
 #define STK_MHZ    (SYSCLK_MHZ / 8)
 #define TIME_MHZ STK_MHZ
@@ -365,12 +366,13 @@ void loop() {
     if (floppy->get_write_protect()) {
         reply_buffer[i++] = GW_ACK_WRPROT;
         Serial.write(reply_buffer, 2);
-        flux_op_end = 0;
+//        flux_op_end = 0;
     } else {
-        flux_op_end = millis() + time_from_samples(ef_fluxticks); // arduino does not have time_now()
+        flux_op_end = millis() + time_from_samples(flux_ticks); // arduino does not have time_now()
     }
 
-	void loop() {
+	void loop()
+	  {
 		if (flux_op_end > millis()) {
 			digitalWrite(WRGATE_PIN, true);
 			floppy_state = ST_erase_flux;
