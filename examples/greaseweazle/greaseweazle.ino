@@ -333,7 +333,7 @@ void loop() {
     Serial.write(reply_buffer, 2);
   }
 
-/*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
+/*  montyleib interpretation of greaseweazle CMD_ERASE_FLUX (GW)
 */
 
   else if (cmd == GW_CMD_ERASE) {
