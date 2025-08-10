@@ -49,7 +49,7 @@
 #endif
 
 #ifndef USE_TINYUSB
-#error "Please set Adafruit TinyUSB under Tools > USB Stack"
+// #error "Please set Adafruit TinyUSB under Tools > USB Stack"
 #endif
 
 #if defined(ARDUINO_ADAFRUIT_FEATHER_RP2040) || defined(ARDUINO_ADAFRUIT_FEATHER_RP2350_HSTX)
@@ -79,7 +79,7 @@ Adafruit_Apple2Floppy apple2floppy(APPLE2_INDEX_PIN, APPLE2_ENABLE_PIN,
                                    APPLE2_PHASE1_PIN, APPLE2_PHASE2_PIN, APPLE2_PHASE3_PIN, APPLE2_PHASE4_PIN,
                                    APPLE2_WRDATA_PIN, APPLE2_WRGATE_PIN, APPLE2_PROTECT_PIN, APPLE2_RDDATA_PIN);
 #else
-#pragma message "This firmware will not support Apple ][ drives"
+#pragma message "This firmware will not support Apple II drives"
 #endif
 
 Adafruit_FloppyBase *floppy;
@@ -90,8 +90,8 @@ uint8_t cmd_buffer[32], reply_buffer[128];
 uint8_t cmd_buff_idx = 0;
 
 #define GW_FIRMVER_MAJOR 1
-#define GW_FIRMVER_MINOR 0
-#define GW_MAXCMD      21
+#define GW_FIRMVER_MINOR 1
+#define GW_MAXCMD      26
 #define GW_HW_MODEL    8  // Adafruity
 #define GW_HW_SUBMODEL 0  // Adafruit Floppy Generic
 #define GW_USB_SPEED   0  // Full Speed
@@ -118,6 +118,7 @@ uint8_t cmd_buff_idx = 0;
 #define GW_CMD_SETPIN    15
 #define GW_CMD_SETPIN_DENSITY 2
 #define GW_CMD_RESET     16
+#define GW_CMD_ERASE     17
 #define GW_CMD_SOURCEBYTES 18
 #define GW_CMD_SINKBYTES 19
 #define GW_CMD_GETPIN 20
@@ -129,6 +130,14 @@ uint8_t cmd_buff_idx = 0;
 #define GW_ACK_WRPROT 6
 #define GW_ACK_NOUNIT 7
 #define GW_ACK_BADPIN 10
+
+#define FLUX_OP_END nullptr
+#define SAMPLE_MHZ		72
+#define SYSCLK_MHZ		72
+#define STK_MHZ			(SYSCLK_MHZ / 8)
+#define TIME_MHZ		STK_MHZ
+#define time_from_samples(x) ((x) * TIME_MHZ / SAMPLE_MHZ)
+
 
 uint32_t timestamp = 0;
 
@@ -143,6 +152,10 @@ bool setbustype(int bustype) {
     case GW_CMD_SETBUSTYPE_IBM:
     case GW_CMD_SETBUSTYPE_SHUGART:
       // TODO: whats the diff???
+		// Shugart uses 10, 12, 14 and 6 for drive_select 1 thru 4 and 16 as motor_on
+		// where IBM uses 10 and 16 as motor_enable A and B, 12 and 14 as drive_select B and A
+		// https://retrocmp.de/fdd/general/floppy-bus.htm
+
       floppy = &pcfloppy;
       break;
 #endif
@@ -320,6 +333,63 @@ void loop() {
     Serial.write(reply_buffer, 2);
   }
 
+/*  monty's interpretation of greaseweazle CMD_ERASE_FLUX (GW)
+*/
+
+  else if (cmd == GW_CMD_ERASE) {
+
+    if (!floppy)
+      goto needfloppy;
+
+    uint32_t flux_ticks = 0;
+    uint16_t revs = 0;
+    flux_ticks = cmd_buffer[5];
+    flux_ticks <<= 8;
+    flux_ticks |= cmd_buffer[4];
+    flux_ticks <<= 8;
+    flux_ticks |= cmd_buffer[3];
+    flux_ticks <<= 8;
+    flux_ticks |= cmd_buffer[2];
+    revs = cmd_buffer[7];
+    revs <<= 8;
+    revs |= cmd_buffer[6];
+    Serial1.printf("source flux_ticks %d\n\r", flux_ticks);
+
+    bool use_index;
+    if (revs) {
+      revs -= 1;
+      use_index = true;
+    } else {
+      use_index = false;
+    }
+
+    if (floppy->track() == -1) {
+      floppy->goto_track(0);
+    }
+
+    Serial1.println("erase");
+
+    if (floppy->get_write_protect()) {
+      reply_buffer[i++] = GW_ACK_WRPROT;
+      Serial.write(reply_buffer, 2);
+//        FLUX_OP_END = 0;
+    } else {
+      FLUX_OP_END = millis() + time_from_samples(flux_ticks);
+    }
+
+    void loop_erase_flux()
+    {
+      if ( millis() < FLUX_OP_END ) {
+        digitalWrite(WRGATE_PIN, true);
+        floppy_state = ST_erase_flux;
+        flux_op.status = ACK_OKAY;
+      } else {
+        digitalWrite(WRGATE_PIN, false);
+        floppy_state = ST_inactive;
+      }
+    }
+  }
+
   else if (cmd == GW_CMD_SETBUSTYPE) {
     uint8_t bustype = cmd_buffer[2];
     auto result = setbustype(bustype);
@@ -398,8 +468,8 @@ void loop() {
   else if (cmd == GW_CMD_READFLUX) {
     if (!floppy) goto needfloppy;
 
-    uint32_t flux_ticks;
-    uint16_t revs;
+    uint32_t flux_ticks = 0;
+    uint16_t revs = 0;
     flux_ticks = cmd_buffer[5];
     flux_ticks <<= 8;
     flux_ticks |= cmd_buffer[4];
