@@ -79,7 +79,7 @@ Adafruit_Apple2Floppy apple2floppy(APPLE2_INDEX_PIN, APPLE2_ENABLE_PIN,
                                    APPLE2_PHASE1_PIN, APPLE2_PHASE2_PIN, APPLE2_PHASE3_PIN, APPLE2_PHASE4_PIN,
                                    APPLE2_WRDATA_PIN, APPLE2_WRGATE_PIN, APPLE2_PROTECT_PIN, APPLE2_RDDATA_PIN);
 #else
-#pragma message "This firmware will not support Apple II drives"
+#pragma message "This firmware will not support Apple ][ drives"
 #endif
 
 Adafruit_FloppyBase *floppy;
@@ -152,9 +152,9 @@ bool setbustype(int bustype) {
     case GW_CMD_SETBUSTYPE_IBM:
     case GW_CMD_SETBUSTYPE_SHUGART:
       // TODO: whats the diff???
-		// Shugart uses 10, 12, 14 and 6 for drive_select 1 thru 4 and 16 as motor_on
-		// where IBM uses 10 and 16 as motor_enable A and B, 12 and 14 as drive_select B and A
-		// https://retrocmp.de/fdd/general/floppy-bus.htm
+      // Shugart uses 10, 12, 14 and 6 for drive_select 1 thru 4 and 16 as motor_on
+      // where IBM uses 10 and 16 as motor_enable A and B, 12 and 14 as drive_select B and A
+      // https://retrocmp.de/fdd/general/floppy-bus.htm
 
       floppy = &pcfloppy;
       break;
@@ -283,6 +283,7 @@ void loop() {
       uint32_t min_usec =  bandwidth_timer * 1000;
       uint32_t max_usec =  bandwidth_timer * 1000;
       // TODO What is this math supposed to be??
+      // bandwidth_timer is in milliseconds, we need microseconds - montyleib
 
       reply_buffer[i++] = min_bytes & 0xFF;
       reply_buffer[i++] = min_bytes >> 8;
@@ -302,6 +303,8 @@ void loop() {
       reply_buffer[i++] = max_usec >> 24;
 
       // TODO more?
+      // seems to me that the buffer only contains 18, why send 34? - montyleib
+
       Serial.write(reply_buffer, 34);
     }
   }
